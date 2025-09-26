@@ -1,0 +1,82 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "qubic",
+      "password": "##$@##",
+      "name": "Administrator",
+      "role": "admin",
+      "created": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "username": "emp",
+      "password": "emp@@",
+      "name": "Employee User",
+      "role": "employee",
+      "created": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "iPhone 14 Pro",
+      "category": "Phones",
+      "barcode": "1234567890123",
+      "stock": 15,
+      "price": 999.99,
+      "cost": 799.99,
+      "description": "Latest iPhone model",
+      "created": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "MacBook Pro",
+      "category": "Laptops",
+      "barcode": "1234567890124",
+      "stock": 8,
+      "price": 1999.99,
+      "cost": 1599.99,
+      "description": "Apple MacBook Pro 16-inch",
+      "created": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Google Play Gift Card",
+      "category": "Vouchers",
+      "barcode": "1234567890125",
+      "stock": 50,
+      "price": 25.00,
+      "cost": 22.50,
+      "description": "$25 Google Play Gift Card",
+      "created": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": 1,
+      "productId": 1,
+      "productName": "iPhone 14 Pro",
+      "quantity": 1,
+      "amount": 999.99,
+      "date": "2024-01-01T00:00:00.000Z",
+      "employee": "admin"
+    },
+    {
+      "id": 2,
+      "productId": 3,
+      "productName": "Google Play Gift Card",
+      "quantity": 2,
+      "amount": 50.00,
+      "date": "2024-01-01T00:00:00.000Z",
+      "employee": "employee"
+    }
+  ],
+  "settings": {
+    "id": 1,
+    "lowStockThreshold": 5,
+    "profitMargin": 25,
+    "storeName": "QUBIC Store",
+    "lastBackup": null
+  }
+}

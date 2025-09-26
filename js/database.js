@@ -1,122 +1,82 @@
-// database.js - Fixed Version
+// database.js - JSON Server Version
 class Database {
     constructor() {
+        this.baseURL = 'http://localhost:3000';
         this.init();
     }
 
     init() {
-        this.initializeDefaultData();
+        // Check if JSON Server is available
+        this.checkServerConnection();
     }
 
-    initializeDefaultData() {
-        if (!localStorage.getItem('users')) {
-            const defaultUsers = [
-                {
-                    id: 1,
-                    username: 'qubic',
-                    password: '##$@##',
-                    name: 'Administrator',
-                    role: 'admin',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    username: 'emp',
-                    password: 'emp@@',
-                    name: 'Employee User',
-                    role: 'employee',
-                    created: new Date().toISOString()
-                }
-            ];
-            localStorage.setItem('users', JSON.stringify(defaultUsers));
+    async checkServerConnection() {
+        try {
+            const response = await fetch(`${this.baseURL}/users`);
+            if (!response.ok) {
+                throw new Error('JSON Server not available');
+            }
+            console.log('Connected to JSON Server successfully');
+        } catch (error) {
+            console.error('JSON Server connection failed:', error);
+            this.showServerError();
         }
+    }
 
-        if (!localStorage.getItem('products')) {
-            const defaultProducts = [
-                {
-                    id: 1,
-                    name: 'iPhone 14 Pro',
-                    category: 'Phones',
-                    barcode: '1234567890123',
-                    stock: 15,
-                    price: 999.99,
-                    cost: 799.99,
-                    description: 'Latest iPhone model',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    name: 'MacBook Pro',
-                    category: 'Laptops',
-                    barcode: '1234567890124',
-                    stock: 8,
-                    price: 1999.99,
-                    cost: 1599.99,
-                    description: 'Apple MacBook Pro 16-inch',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 3,
-                    name: 'Google Play Gift Card',
-                    category: 'Vouchers',
-                    barcode: '1234567890125',
-                    stock: 50,
-                    price: 25.00,
-                    cost: 22.50,
-                    description: '$25 Google Play Gift Card',
-                    created: new Date().toISOString()
-                }
-            ];
-            localStorage.setItem('products', JSON.stringify(defaultProducts));
-        }
+    showServerError() {
+        const errorMessage = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: #ff4444;
+                color: white;
+                padding: 15px;
+                text-align: center;
+                z-index: 10000;
+                font-weight: bold;
+            ">
+                ⚠️ JSON Server is not running. Please start the server with: npm run json-server
+            </div>
+        `;
+        document.body.insertAdjacentHTML('afterbegin', errorMessage);
+    }
 
-        if (!localStorage.getItem('transactions')) {
-            const defaultTransactions = [
-                {
-                    id: 1,
-                    productId: 1,
-                    productName: 'iPhone 14 Pro',
-                    quantity: 1,
-                    amount: 999.99,
-                    date: new Date(Date.now() - 86400000).toISOString(),
-                    employee: 'admin'
+    // Generic API methods
+    async apiCall(endpoint, options = {}) {
+        try {
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
                 },
-                {
-                    id: 2,
-                    productId: 3,
-                    productName: 'Google Play Gift Card',
-                    quantity: 2,
-                    amount: 50.00,
-                    date: new Date(Date.now() - 172800000).toISOString(),
-                    employee: 'employee'
-                }
-            ];
-            localStorage.setItem('transactions', JSON.stringify(defaultTransactions));
-        }
+                ...options
+            });
 
-        if (!localStorage.getItem('settings')) {
-            const defaultSettings = {
-                lowStockThreshold: 5,
-                profitMargin: 25,
-                storeName: 'QUBIC Store',
-                lastBackup: null
-            };
-            localStorage.setItem('settings', JSON.stringify(defaultSettings));
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`API call failed for ${endpoint}:`, error);
+            throw error;
         }
     }
 
     // User management methods
-    getUsers() {
-        return JSON.parse(localStorage.getItem('users') || '[]');
+    async getUsers() {
+        return await this.apiCall('/users');
     }
 
-    getUserByUsername(username) {
-        const users = this.getUsers();
+    async getUserByUsername(username) {
+        const users = await this.getUsers();
         return users.find(user => user.username === username);
     }
 
-    addUser(userData) {
-        const users = this.getUsers();
+    async addUser(userData) {
+        const users = await this.getUsers();
         
         // Check if username already exists
         if (users.find(user => user.username === userData.username)) {
@@ -124,101 +84,96 @@ class Database {
         }
         
         const newUser = {
-            id: this.generateId(users),
             username: userData.username,
             password: userData.password,
             name: userData.name,
             role: userData.role || 'employee',
             created: new Date().toISOString()
         };
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        return newUser;
+
+        return await this.apiCall('/users', {
+            method: 'POST',
+            body: JSON.stringify(newUser)
+        });
     }
 
-    updateUser(id, updatedData) {
-        const users = this.getUsers();
-        const userIndex = users.findIndex(user => user.id === id);
-        if (userIndex !== -1) {
-            // Don't update username if it's admin
-            if (users[userIndex].username === 'admin') {
-                delete updatedData.username;
-            }
-            
-            users[userIndex] = { ...users[userIndex], ...updatedData };
-            localStorage.setItem('users', JSON.stringify(users));
-            return users[userIndex];
+    async updateUser(id, updatedData) {
+        const user = await this.apiCall(`/users/${id}`);
+        
+        // Don't update username if it's admin
+        if (user.username === 'admin') {
+            delete updatedData.username;
         }
-        return null;
+        
+        const updatedUser = { ...user, ...updatedData };
+        return await this.apiCall(`/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(updatedUser)
+        });
     }
 
-    deleteUser(id) {
-        const users = this.getUsers();
-        const user = users.find(u => u.id === id);
+    async deleteUser(id) {
+        const user = await this.apiCall(`/users/${id}`);
         
         // Prevent deleting admin user
         if (user && user.username === 'admin') {
             throw new Error('Cannot delete admin user');
         }
         
-        const filteredUsers = users.filter(user => user.id !== id);
-        localStorage.setItem('users', JSON.stringify(filteredUsers));
-        return filteredUsers;
+        return await this.apiCall(`/users/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // Product management methods
-    getProducts() {
-        return JSON.parse(localStorage.getItem('products') || '[]');
+    async getProducts() {
+        return await this.apiCall('/products');
     }
 
-    getProduct(id) {
-        const products = this.getProducts();
-        return products.find(product => product.id === id);
+    async getProduct(id) {
+        return await this.apiCall(`/products/${id}`);
     }
 
-    getProductByBarcode(barcode) {
-        const products = this.getProducts();
+    async getProductByBarcode(barcode) {
+        const products = await this.getProducts();
         return products.find(product => product.barcode === barcode);
     }
 
-    addProduct(productData) {
-        const products = this.getProducts();
+    async addProduct(productData) {
         const newProduct = {
-            id: this.generateId(products),
             ...productData,
             created: new Date().toISOString()
         };
-        products.push(newProduct);
-        localStorage.setItem('products', JSON.stringify(products));
-        return newProduct;
+
+        return await this.apiCall('/products', {
+            method: 'POST',
+            body: JSON.stringify(newProduct)
+        });
     }
 
-    updateProduct(id, updatedData) {
-        const products = this.getProducts();
-        const productIndex = products.findIndex(product => product.id === id);
-        if (productIndex !== -1) {
-            products[productIndex] = { ...products[productIndex], ...updatedData };
-            localStorage.setItem('products', JSON.stringify(products));
-            return products[productIndex];
-        }
-        return null;
+    async updateProduct(id, updatedData) {
+        const product = await this.getProduct(id);
+        const updatedProduct = { ...product, ...updatedData };
+        
+        return await this.apiCall(`/products/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(updatedProduct)
+        });
     }
 
-    deleteProduct(id) {
-        const products = this.getProducts();
-        const filteredProducts = products.filter(product => product.id !== id);
-        localStorage.setItem('products', JSON.stringify(filteredProducts));
-        return filteredProducts;
+    async deleteProduct(id) {
+        return await this.apiCall(`/products/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // Transaction management methods
-    getTransactions() {
-        return JSON.parse(localStorage.getItem('transactions') || '[]');
+    async getTransactions() {
+        return await this.apiCall('/transactions');
     }
 
-    addTransaction(transactionData) {
-        const transactions = this.getTransactions();
-        const product = this.getProduct(transactionData.productId);
+    async addTransaction(transactionData) {
+        const product = await this.getProduct(transactionData.productId);
         
         if (!product) {
             throw new Error('Product not found');
@@ -229,7 +184,6 @@ class Database {
         }
         
         const newTransaction = {
-            id: this.generateId(transactions),
             productId: transactionData.productId,
             productName: product.name,
             quantity: transactionData.quantity,
@@ -238,66 +192,84 @@ class Database {
             employee: window.auth ? window.auth.getCurrentUser().username : 'system'
         };
         
-        transactions.unshift(newTransaction); // Add to beginning for recent first
-        
         // Update product stock
-        this.updateProduct(product.id, {
+        await this.updateProduct(product.id, {
             stock: product.stock - transactionData.quantity
         });
         
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        return newTransaction;
+        return await this.apiCall('/transactions', {
+            method: 'POST',
+            body: JSON.stringify(newTransaction)
+        });
     }
 
-    deleteTransaction(id) {
-        const transactions = this.getTransactions();
-        const transaction = transactions.find(t => t.id === id);
+    async deleteTransaction(id) {
+        const transaction = await this.apiCall(`/transactions/${id}`);
         
         if (transaction) {
             // Restore product stock
-            const product = this.getProduct(transaction.productId);
+            const product = await this.getProduct(transaction.productId);
             if (product) {
-                this.updateProduct(product.id, {
+                await this.updateProduct(product.id, {
                     stock: product.stock + transaction.quantity
                 });
             }
         }
         
-        const filteredTransactions = transactions.filter(t => t.id !== id);
-        localStorage.setItem('transactions', JSON.stringify(filteredTransactions));
-        return filteredTransactions;
+        return await this.apiCall(`/transactions/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // Settings management
-    getSettings() {
-        return JSON.parse(localStorage.getItem('settings') || '{}');
+    async getSettings() {
+        try {
+            const settings = await this.apiCall('/settings/1');
+            return settings;
+        } catch (error) {
+            // Return default settings if not found
+            return {
+                id: 1,
+                lowStockThreshold: 5,
+                profitMargin: 25,
+                storeName: 'QUBIC Store',
+                lastBackup: null
+            };
+        }
     }
 
-    updateSettings(newSettings) {
-        const currentSettings = this.getSettings();
+    async updateSettings(newSettings) {
+        const currentSettings = await this.getSettings();
         const updatedSettings = { ...currentSettings, ...newSettings };
-        localStorage.setItem('settings', JSON.stringify(updatedSettings));
-        return updatedSettings;
+        
+        return await this.apiCall('/settings/1', {
+            method: 'PUT',
+            body: JSON.stringify(updatedSettings)
+        });
     }
 
-    // Utility methods
-    generateId(items) {
-        return items.length > 0 ? Math.max(...items.map(item => item.id)) + 1 : 1;
-    }
+    // Backup/Restore methods
+    async backupData() {
+        const [users, products, transactions, settings] = await Promise.all([
+            this.getUsers(),
+            this.getProducts(),
+            this.getTransactions(),
+            this.getSettings()
+        ]);
 
-    backupData() {
-        const data = {
-            users: this.getUsers(),
-            products: this.getProducts(),
-            transactions: this.getTransactions(),
-            settings: this.getSettings(),
+        const backupData = {
+            users,
+            products,
+            transactions,
+            settings,
             backupDate: new Date().toISOString(),
             version: '1.0'
         };
-        return JSON.stringify(data, null, 2);
+
+        return JSON.stringify(backupData, null, 2);
     }
 
-    restoreData(backupData) {
+    async restoreData(backupData) {
         try {
             const data = JSON.parse(backupData);
             
@@ -305,15 +277,56 @@ class Database {
             if (!data.users || !data.products || !data.transactions || !data.settings) {
                 throw new Error('Invalid backup file format');
             }
-            
-            localStorage.setItem('users', JSON.stringify(data.users));
-            localStorage.setItem('products', JSON.stringify(data.products));
-            localStorage.setItem('transactions', JSON.stringify(data.transactions));
-            localStorage.setItem('settings', JSON.stringify(data.settings));
-            
+
+            // Clear existing data
+            await this.clearAllData();
+
+            // Restore data
+            const restorePromises = [
+                ...data.users.map(user => this.apiCall('/users', {
+                    method: 'POST',
+                    body: JSON.stringify(user)
+                })),
+                ...data.products.map(product => this.apiCall('/products', {
+                    method: 'POST',
+                    body: JSON.stringify(product)
+                })),
+                ...data.transactions.map(transaction => this.apiCall('/transactions', {
+                    method: 'POST',
+                    body: JSON.stringify(transaction)
+                }))
+            ];
+
+            await Promise.all(restorePromises);
+            await this.updateSettings(data.settings);
+
             return true;
         } catch (error) {
             console.error('Error restoring backup:', error);
+            return false;
+        }
+    }
+
+    async clearAllData() {
+        try {
+            // Get all existing data
+            const [users, products, transactions] = await Promise.all([
+                this.getUsers(),
+                this.getProducts(),
+                this.getTransactions()
+            ]);
+
+            // Delete all records
+            const deletePromises = [
+                ...users.map(user => this.apiCall(`/users/${user.id}`, { method: 'DELETE' })),
+                ...products.map(product => this.apiCall(`/products/${product.id}`, { method: 'DELETE' })),
+                ...transactions.map(transaction => this.apiCall(`/transactions/${transaction.id}`, { method: 'DELETE' }))
+            ];
+
+            await Promise.all(deletePromises);
+            return true;
+        } catch (error) {
+            console.error('Error clearing data:', error);
             return false;
         }
     }

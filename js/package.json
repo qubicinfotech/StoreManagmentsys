@@ -1,0 +1,12 @@
+{
+  "name": "qubic-store-management",
+  "version": "1.0.0",
+  "description": "Store Management System with JSON Server",
+  "scripts": {
+    "json-server": "json-server --watch db.json --port 3000 --host localhost",
+    "start": "npm run json-server"
+  },
+  "devDependencies": {
+    "json-server": "^0.17.4"
+  }
+}
