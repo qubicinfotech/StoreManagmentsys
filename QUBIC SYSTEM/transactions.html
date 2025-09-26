@@ -1,0 +1,115 @@
+<!-- transactions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Transaction Management for QUBIC Store Management System">
+    <title>Transactions - QUBIC Store Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <nav class="sidebar">
+                <div class="logo">
+                    <i class="fas fa-cube" aria-hidden="true"></i>
+                    <h1>QUBIC</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="transactions.html" class="active"><i class="fas fa-shopping-cart"></i> Transactions</a></li>
+                    <li><a href="analytics.html"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                    <li id="admin-nav" style="display:none;"><a href="admin.html"><i class="fas fa-users-cog"></i> Admin Panel</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <header class="header">
+                    <h1 id="page-title">Transaction Management</h1>
+                    <div class="user-info">
+                        <span id="user-display">Admin User</span>
+                        <button class="logout-btn" id="logout-btn" aria-label="Logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </header>
+
+                <section class="page active">
+                    <div class="table-header">
+                        <h2>All Transactions</h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="new-transaction-btn">
+                                <i class="fas fa-plus"></i> New Transaction
+                            </button>
+                            <div class="search-box">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                <input type="text" id="transaction-search" placeholder="Search transactions..." aria-label="Search transactions">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <caption>Transaction history with details</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Product</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Amount</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Employee</th>
+                                    <th scope="col" id="transaction-actions-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table">
+                                <!-- Transactions will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal" id="transaction-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>New Transaction</h3>
+                <button class="close-modal" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="transaction-product">Product</label>
+                    <select id="transaction-product" required>
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-quantity">Quantity</label>
+                    <input type="number" id="transaction-quantity" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="transaction-price">Price ($)</label>
+                    <input type="number" id="transaction-price" required min="0" step="0.01" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-total">Total Amount ($)</label>
+                    <input type="number" id="transaction-total" required min="0" step="0.01" readonly>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-transaction">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Complete Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+<script src="js/auth.js"></script>
+<script src="js/database.js"></script>
+    <script src="js/transactions.js"></script>
+</body>
+</html>

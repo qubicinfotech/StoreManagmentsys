@@ -1,0 +1,164 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Panel for QUBIC Store Management System">
+    <title>Admin Panel - QUBIC Store Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <nav class="sidebar">
+                <div class="logo">
+                    <i class="fas fa-cube" aria-hidden="true"></i>
+                    <h1>QUBIC</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="inventory.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+                    <li><a href="transactions.html"><i class="fas fa-shopping-cart"></i> Transactions</a></li>
+                    <li><a href="analytics.html"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                    <li id="admin-nav"><a href="admin.html" class="active"><i class="fas fa-users-cog"></i> Admin Panel</a></li>
+                </ul>
+            </nav>
+
+            <main class="main-content">
+                <header class="header">
+                    <h1 id="page-title">Admin Panel</h1>
+                    <div class="user-info">
+                        <span id="user-display">Admin User</span>
+                        <button class="logout-btn" id="logout-btn" aria-label="Logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </header>
+
+                <section class="page active">
+                    <div class="tabs" role="tablist">
+                        <button class="tab-button active" data-tab="employees" role="tab" aria-selected="true">Employee Management</button>
+                        <button class="tab-button" data-tab="settings" role="tab" aria-selected="false">System Settings</button>
+                        <button class="tab-button" data-tab="backup" role="tab" aria-selected="false">Data Backup</button>
+                    </div>
+
+                    <div id="employees-tab" class="tab-content active" role="tabpanel">
+                        <div class="table-header">
+                            <h2>Employee Management</h2>
+                            <button class="btn btn-primary" id="add-employee-btn">
+                                <i class="fas fa-plus"></i> Add Employee
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <caption>List of employees with their details and actions</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employees-table">
+                                    <!-- Employees will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="settings-tab" class="tab-content" role="tabpanel">
+                        <div class="table-header">
+                            <h2>System Settings</h2>
+                        </div>
+                        <div class="table-container">
+                            <form id="settings-form">
+                                <div class="form-group">
+                                    <label for="low-stock-threshold">Low Stock Threshold</label>
+                                    <input type="number" id="low-stock-threshold" min="1" required>
+                                    <small>Products with stock below this value will be marked as low stock</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profit-margin">Default Profit Margin (%)</label>
+                                    <input type="number" id="profit-margin" min="0" max="100" step="0.1" required>
+                                    <small>Default profit margin applied to new products</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="store-name">Store Name</label>
+                                    <input type="text" id="store-name" required>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="backup-tab" class="tab-content" role="tabpanel">
+                        <div class="table-header">
+                            <h2>Data Backup & Restore</h2>
+                        </div>
+                        <div class="table-container">
+                            <div class="backup-actions">
+                                <button class="btn btn-primary" id="backup-btn">
+                                    <i class="fas fa-download"></i> Backup Data
+                                </button>
+                                <button class="btn btn-secondary" id="restore-btn">
+                                    <i class="fas fa-upload"></i> Restore Data
+                                </button>
+                                <input type="file" id="restore-file" accept=".json" style="display: none;">
+                            </div>
+                            <div class="backup-info">
+                                <h3>Last Backup: <span id="last-backup">Never</span></h3>
+                                <p>Backup your store data to prevent data loss. You can restore from a backup file if needed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal" id="employee-modal" aria-hidden="true" role="dialog" aria-labelledby="employee-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="employee-modal-title">Add Employee</h3>
+                <button class="close-modal" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="employee-form">
+                <div class="form-group">
+                    <label for="employee-username">Username</label>
+                    <input type="text" id="employee-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="employee-name">Full Name</label>
+                    <input type="text" id="employee-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="employee-password">Password</label>
+                    <input type="password" id="employee-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="employee-role">Role</label>
+                    <select id="employee-role" required>
+                        <option value="employee">Employee</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-employee">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+<script src="js/auth.js"></script>
+<script src="js/database.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
